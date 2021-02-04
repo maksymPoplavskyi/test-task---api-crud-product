@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Product;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -35,17 +36,31 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->bindings();
+
         $this->configureRateLimiting();
 
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware('api')
                 ->namespace($this->namespace)
-                ->group(base_path('routes/api.php'));
+                ->group(base_path('routes/api/api.php'));
+
+            Route::prefix('api/admin')
+                ->middleware('api')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/api/admin.php'));
 
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
+        });
+    }
+
+    protected function bindings()
+    {
+        Route::bind('product_id', function ($id) {
+            return Product::where('id', $id)->firstOrFail();
         });
     }
 
